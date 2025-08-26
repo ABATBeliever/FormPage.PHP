@@ -8,7 +8,7 @@
 
 ---
 ## ⬇️ ダウンロード
-[Download](https://github.com/ABATBeliever/FormPage.PHP/release)
+[Download](https://github.com/ABATBeliever/FormPage.PHP/releases)
 
 ---
 
