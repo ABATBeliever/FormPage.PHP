@@ -4,9 +4,9 @@
 ![Version](https://img.shields.io/badge/version-1.0-green.svg)
 ![Version](https://img.shields.io/badge/Language-PHP-yellow.svg)
 
-FormPageは、PHP製のシンプルなフォーム作成ソフトウェアです。
----
+<p>FormPageは、PHP製のシンプルなフォーム作成ソフトウェアです。</p>
 
+---
 ## ⬇️ ダウンロード
 [Download](https://github.com/ABATBeliever/FormPage.PHP/release)
 
