@@ -1,0 +1,9 @@
+;define for formpage
+title=お問い合わせフォーム
+until=
+author=ほげほげさん
+
+!select 好きな食べ物は? メロン スイカ イチゴ
+selects いったことある地方 北海道 東北 関東 九州
+write 連絡用email
+writes なんでも
