@@ -1,7 +1,7 @@
 ---
 # 💫 FormPage
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.1-green.svg)
 ![Version](https://img.shields.io/badge/Language-PHP-yellow.svg)
 
 <p>FormPageは、PHP製のシンプルなフォーム作成ソフトウェアです。</p>
@@ -14,13 +14,15 @@
 
 ## 🫠 主な機能
 - 誰でも簡単に以下のようなフォームを作成
-<img width="692" height="804" alt="image" src="https://github.com/user-attachments/assets/a07169dd-a749-4d37-869e-241460970cdf" />
+<img width="803" height="914" alt="image" src="https://github.com/user-attachments/assets/a07e80b7-5f25-40e8-a6af-1ea9b41c7635" />
 
 - シンプルな記述で内容を定義
-<img width="460" height="327" alt="image" src="https://github.com/user-attachments/assets/738874e8-8412-4fa0-b8a3-737a3c5fb5f4" />
+<img width="405" height="291" alt="image" src="https://github.com/user-attachments/assets/59417092-abf9-4dec-b915-0857b10eff63" />
 
 - 結果もシンプルな保存
 <img width="336" height="253" alt="image" src="https://github.com/user-attachments/assets/0b92e42c-7201-43d9-8733-f4d5b914cf5f" />
+
+- 複数のカスタマイズ可能なスパム対策
 
 ---
 ## 🚀 使用方法
