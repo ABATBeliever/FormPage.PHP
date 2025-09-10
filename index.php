@@ -1,18 +1,18 @@
 <?php
 $target = isset($_GET['f']) ? trim($_GET['f']) : '';
 if ($target === '') {
-	readfile('err.html');
-	exit;
+    readfile('res/err.html');
+    exit;
 }
-$baseDir = __DIR__ . '/' . $target;
+$baseDir = __DIR__ . '/case/' . $target;
 $defineFile = $baseDir . '/define.txt';
 $resultFile = $baseDir . '/result.txt';
 if (!file_exists($defineFile)) {
-	readfile('err.html');
-	exit;
+    readfile('res/err.html');
+    exit;
 }
 $lines = file($defineFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-$meta = ['title'=>'','until'=>'','author'=>''];
+$meta = ['title'=>'','until'=>'','author'=>'','interval'=>0,'hashcheck'=>0];
 $questions = [];
 foreach ($lines as $line) {
     $line = trim($line);
@@ -20,6 +20,8 @@ foreach ($lines as $line) {
     if (strpos($line,'title=')===0) { $meta['title'] = substr($line,6); continue; }
     if (strpos($line,'until=')===0) { $meta['until'] = substr($line,6); continue; }
     if (strpos($line,'author=')===0) { $meta['author'] = substr($line,7); continue; }
+    if (strpos($line,'interval=')===0) { $meta['interval'] = (int)substr($line,9); continue; }
+    if (strpos($line,'hashcheck=')===0) { $meta['hashcheck'] = (int)substr($line,10); continue; }
     $isRequired = false;
     if ($line[0]==='!') { $isRequired=true; $line=substr($line,1); }
     $parts = explode(' ',$line);
@@ -29,16 +31,45 @@ foreach ($lines as $line) {
     $questions[]= ['type'=>$type,'title'=>$title,'options'=>$options,'required'=>$isRequired];
 }
 if ($meta['until']!=='' && strtotime($meta['until'])<time()) {
-	readfile('err.html');
-	exit;
+    readfile('res/err.html');
+    exit;
 }
 if ($_SERVER['REQUEST_METHOD']==='POST') {
-	date_default_timezone_set('Asia/Tokyo');
-	$output = 'Case '.date('Y/m/d H:i:s').' IP:'.$_SERVER['REMOTE_ADDR']."\n";
+    date_default_timezone_set('Asia/Tokyo');
+    if ($meta['interval']>0) {
+        $limitFile = $baseDir . '/ip-chk.dat';
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $now = time();
+        $recent = [];
+        if (file_exists($limitFile)) {
+            if (($fp = fopen($limitFile, 'r')) !== false) {
+                fgetcsv($fp);
+                while (($row = fgetcsv($fp)) !== false) {
+                    if (count($row) >= 2) {
+                        $recent[] = ['ip'=>$row[0],'time'=>(int)$row[1]];
+                    }
+                }
+                fclose($fp);
+            }
+        }
+        foreach ($recent as $r) {
+            if ($r['ip']===$ip && ($now - $r['time']) < $meta['interval']) {
+                readfile('res/deny.html');
+                exit;
+            }
+        }
+        $fp = fopen($limitFile, 'a');
+        if ($fp) {
+            if (filesize($limitFile)===0) fputcsv($fp,['ip','time']);
+            fputcsv($fp,[$ip,$now]);
+            fclose($fp);
+        }
+    }
+    $output = 'Case '.date('Y/m/d H:i:s').' IP:'.$_SERVER['REMOTE_ADDR']."\n";
+    $answerSet = [];
     foreach ($questions as $i=>$q) {
         $key = 'q'.$i;
         $answer = '';
-
         if ($q['type']==='select') {
             $answer = isset($_POST[$key]) ? $_POST[$key] : '';
             if ($q['required'] && $answer==='') exit('必須項目が未入力です。');
@@ -52,10 +83,35 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
             $answer = isset($_POST[$key]) ? $_POST[$key] : '';
             if ($q['required'] && trim($answer)==='') exit('必須項目が未入力です。');
         }
-
+        $answerSet[] = $q['title'].'='.$answer;
         $output .= 'Question'.($i+1).' 「'.$q['title'].'」';
         if ($q['type']==='writes') $output .= "->\n$answer\n";
         else $output .= ' '.$answer."\n";
+    }
+    if ($meta['hashcheck']>0) {
+        $joined = implode("\n",$answerSet);
+        $hash = hash('sha3-256',$joined);
+        $hashFile = $baseDir.'/hash-chk.dat';
+        $exists=false;
+        if (file_exists($hashFile)) {
+            if (($fp=fopen($hashFile,'r'))!==false) {
+                fgetcsv($fp);
+                while(($row=fgetcsv($fp))!==false){
+                    if ($row[0]===$hash){$exists=true;break;}
+                }
+                fclose($fp);
+            }
+        }
+        if ($exists)          {
+        	readfile('res/deny.html');
+            exit;
+        }
+        $fp=fopen($hashFile,'a');
+        if ($fp){
+            if (filesize($hashFile)===0) fputcsv($fp,['hash','time']);
+            fputcsv($fp,[$hash,time()]);
+            fclose($fp);
+        }
     }
     $output .= "[END]\n\n";
     $fp = fopen($resultFile,'a');
@@ -65,8 +121,8 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
         flock($fp, LOCK_UN);
         fclose($fp);
     }
-	header('Location: thankyou.html');
-	exit;
+    header('Location: res/thankyou.html');
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -103,8 +159,7 @@ body{font-family:"Segoe UI","Yu Gothic","Helvetica Neue",sans-serif;background-c
 <?php endforeach; ?>
 <button type="submit">送信する</button>
 <br><br>
-<small>formpage ver1.0 by ABATBeliever. Under MIT License.</small>
+<p><small>このフォームは <a href="https://github.com/ABATBeliever/FormPage.PHP" target="__blank">FormPage.PHP</a> ver1.1 で作成されました。<br><a href="./res/privacy-policy.html" target="__blank">免責・プライバシーポリシー</a></small></p>
 </form>
-
 </body>
 </html>
